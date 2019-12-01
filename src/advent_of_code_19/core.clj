@@ -1,10 +1,10 @@
-(ns adven-of-code-19.core)
+(ns advent-of-code-19.core)
 
 (def input1 (map #(Integer. %) (clojure.string/split (slurp "resources/input1.txt") #"\n")))
 (def input1-test [1969]) ; result 654
 
 (defn fuel-for-mass [mass]
-  (- (Math/floor (/ mass 3)) 2))
+  (int (- (Math/floor (/ mass 3)) 2)))
 
 (defn fuel-for-module [mass]
   (let [fuel (fuel-for-mass mass)]
