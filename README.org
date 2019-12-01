@@ -2,11 +2,32 @@
 
 Let's bring back Santa from the edge of the solar system
 
+** Day 1
+   
+   Part 1
+   #+BEGIN_SRC clojure
+     ; First we need to calculate the fuel per mass:
+     (defn fuel-for-mass [mass]
+       (- (Math/floor (/ mass 3)) 2))
 
+     ; Then we need to sum up the fuel for all the modules
+     (defn day1-1 [input]
+       (->> input
+            (map fuel-for-mass)
+            (reduce +)))
+   #+END_SRC
+   
+   Part 2
+   #+BEGIN_SRC clojure
+     ; Recursively calculate the additional fuel requirement the fuel
+     (defn fuel-for-module [mass]
+       (let [fuel (fuel-for-mass mass)]
+         (if (> fuel 0)
+           (+ fuel (fuel-for-module fuel))
+           0)))
 
-## License
-
-Copyright © 2019 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+     (defn day1-2 [input]
+       (->> input
+            (map fuel-for-module)
+            (reduce +)))
+   #+END_SRC
