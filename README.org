@@ -1,0 +1,12 @@
+* Advent of code 2019
+
+Let's bring back Santa from the edge of the solar system
+
+
+
+## License
+
+Copyright © 2019 FIXME
+
+Distributed under the Eclipse Public License either version 1.0 or (at
+your option) any later version.
