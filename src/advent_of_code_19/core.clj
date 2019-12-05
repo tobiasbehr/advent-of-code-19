@@ -109,7 +109,6 @@
 (defn distance-to-port [[x1 y1]]
   (+ (Math/abs (- x1 0)) (Math/abs (- y1 0))))
 
-; 149816 points for route 1
 (defn day3-1 []
   (let [input (input3)
         route1 (route (clojure.string/split (first input) #","))
@@ -121,3 +120,100 @@
         sort
         (drop 1)
         first)))
+
+(defn distance [route point]
+  (count (take-while #(not= % point) route)))
+
+(defn day3-2 []
+  (let [input (input3)
+        route1 (route (clojure.string/split (first input) #","))
+        route2 (route (clojure.string/split (last input) #","))
+        intersects (->> route1
+                        (route-index)
+                        (find-intersects route2))]
+    (->> intersects
+         (map #(vector (distance route1 %) (distance route2 %)))
+         (map #(apply + %))
+         sort
+         (drop 1)
+         first)))
+
+
+;;; Day 4
+(defn digits-not-decreasing? [input]
+  (->> input
+       str
+       (map identity)
+       (map #(Character/getNumericValue %))
+       (partition 2 1)
+       (every? #(<= (first %) (last %)))
+       ))
+
+(defn has-same-adjacent-digits? [input]
+  (->> input
+       str
+       (map identity)
+       (map #(Character/getNumericValue %))
+       (partition 2 1)
+       (some #(= (first %) (last %)))
+       ))
+
+(defn matching-digits-not-in-group? [input]
+  (->> input
+       str
+       (frequencies)
+       vals
+       (some #(= 2 %))
+       ))
+
+(defn password? [input]
+  (let [pred (every-pred number?
+                         #(>= % 100000)
+                         #(< % 1000000))]
+    (pred input)))
+
+(defn handle-equal [{last :last count :count matches :matches position :position :as state} number]
+  (if (and (= position 6) (= count 1))
+    (assoc state :matches true )
+    {:last number
+     :count (inc count)
+     :matches matches
+     :position (inc position)}))
+
+(defn handle-greater [{last :last count :count matches :matches position :position :as state} number]
+  (if (= count 2)
+    (assoc state :matches true :count (inc count) position (inc position) :last number)
+    {:last number
+     :count 1
+     :matches matches
+     :position (inc position)}))
+
+(defn two-matching-adjacent-digits? [input]
+  (->> input
+       str
+       (map identity)
+       (map #(Character/getNumericValue %))
+       (reduce 
+        (fn [{last :last count :count matches :matches position :position :as state} number]
+          (cond
+            (nil? last) {:last number :count 1 :position 2}
+            (< number last) (reduced {:matches false})
+            (= last number) (handle-equal state number)
+            (> number last) (handle-greater state number))) {:matches false :position 1})
+       (:matches)))
+
+(defn day4-1 []
+  (->> (range 153517 630395)
+       (filter password?)
+       (filter two-matching-adjacent-digits?)
+       (count)))
+
+
+
+(defn day4-2 []
+  (->> (range 153517 630395)
+       (filter password?)
+       (filter two-matching-adjacent-digits?)
+       (count)))
+
+

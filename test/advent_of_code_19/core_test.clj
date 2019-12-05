@@ -56,3 +56,51 @@
 (deftest next-locations-test
   (testing ""
     (is (= [[0 0] [1 0] [2 0]] (route ["R2"])))))
+
+
+(deftest distance-test
+  (testing "determination of distance of a certain point in a route"
+    (is (= 3 (distance [[0 0] [0 1] [1 1] [1 2]] [1 2])))))
+
+
+;;; Day 4
+
+(deftest digits-not-decreasing?-test
+  (testing "digits are not decreasing"
+    (is (true? (digits-not-decreasing? 1234)))
+    (is (true? (digits-not-decreasing? 12223)))
+    (is (not (true? (digits-not-decreasing? 12221))))))
+
+(deftest has-same-adjacent-digits?-test
+  (testing "at least on pair of adjacent digits is equal"
+    (is (true? (has-same-adjacent-digits? 1223)))
+    (is (true? (not (has-same-adjacent-digits? 1234))))))
+
+(deftest password?-test
+  (testing "input string meets password criteria"
+    (is (not (true? (password? "hallo"))))
+    (is (not (true? (password? 123))))
+    (is (true? (password? 123456)))
+    (is (not (true? (password? 1234567))))))
+
+(comment (deftest matching-digits-not-in-group?-test
+           (testing "matching digits not part of group"
+             (is (true? (matching-digits-not-in-group? 1223456)))
+             (is (true? (matching-digits-not-in-group? 1224444)))
+             (is (not (true? (matching-digits-not-in-group? 1222444))))
+             (is (not (true? (matching-digits-not-in-group? 122214)))))))
+
+
+(deftest handle-greater-test
+  (testing "handling if a greater digit in the number"
+    (is (= true (:matches (handle-greater {:count 2 :position 3 :matches false} 3))))
+    (is (= false (:matches (handle-greater {:count 3 :position 3 :matches false} 3))))))
+
+(deftest two-matching-adjacent-digits?-test
+  (testing "digits are not decreasing"
+    (is (not (true? (two-matching-adjacent-digits? 123456))))
+    (is (true? (two-matching-adjacent-digits? 122345)))
+    (is (true? (two-matching-adjacent-digits? 123455)))
+    (is (not (true? (two-matching-adjacent-digits? 122234))))
+    (is (not (true? (two-matching-adjacent-digits? 122212))))
+    ))
