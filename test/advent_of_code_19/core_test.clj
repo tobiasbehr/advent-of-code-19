@@ -83,14 +83,6 @@
     (is (true? (password? 123456)))
     (is (not (true? (password? 1234567))))))
 
-(comment (deftest matching-digits-not-in-group?-test
-           (testing "matching digits not part of group"
-             (is (true? (matching-digits-not-in-group? 1223456)))
-             (is (true? (matching-digits-not-in-group? 1224444)))
-             (is (not (true? (matching-digits-not-in-group? 1222444))))
-             (is (not (true? (matching-digits-not-in-group? 122214)))))))
-
-
 (deftest handle-greater-test
   (testing "handling if a greater digit in the number"
     (is (= true (:matches (handle-greater {:count 2 :position 3 :matches false} 3))))
@@ -102,5 +94,32 @@
     (is (true? (two-matching-adjacent-digits? 122345)))
     (is (true? (two-matching-adjacent-digits? 123455)))
     (is (not (true? (two-matching-adjacent-digits? 122234))))
-    (is (not (true? (two-matching-adjacent-digits? 122212))))
-    ))
+    (is (not (true? (two-matching-adjacent-digits? 122212))))))
+
+;;; Day 5
+
+(deftest get-value-test
+  (testing "retrieval of values in position and immediate mode"
+    (is (= 2 (get-value 1 2 [1 2 3 4])))
+    (is (= 3 (get-value 0 2 [1 2 3 4])))))
+
+(deftest modes-test
+  (testing "retrieval of values in position and immediate mode"
+    (is (= [0 1 0] (modes 1001)))))
+
+(deftest determine-op-test
+  (testing "determination of operation :io or :calculation"
+    (is (= :io (determine-op {:memory [3 2 3 4 99] :pointer 0})))
+    (is (= :io (determine-op {:memory [4 2 3 4 99] :pointer 0})))
+    (is (= :calculation (determine-op {:memory [1 2 3 4 99] :pointer 0})))
+    (is (= :calculation (determine-op {:memory [2 2 3 4 99] :pointer 0})))))
+
+(deftest execute-instruction-test
+  (testing ""
+    (is (= {:memory [1002 4 3 4 99] :pointer 4} (execute-instruction {:memory [1002 4 3 4 33] :pointer 0})))
+    (is (= {:memory [1 4 3 4 37] :pointer 4} (execute-instruction {:memory [1 4 3 4 33] :pointer 0})))
+    (is (= {:memory [1101 4 3 4 7] :pointer 4} (execute-instruction {:memory [1101 4 3 4 33] :pointer 0})))))
+
+(deftest execute-program-test
+  (testing "execution of a program"
+    (is (= [1 4 2 2 2 2 2 1 99] (execute-program {:memory [1 0 0 2 2 2 2 1 99]})))))

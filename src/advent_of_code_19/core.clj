@@ -158,14 +158,6 @@
        (some #(= (first %) (last %)))
        ))
 
-(defn matching-digits-not-in-group? [input]
-  (->> input
-       str
-       (frequencies)
-       vals
-       (some #(= 2 %))
-       ))
-
 (defn password? [input]
   (let [pred (every-pred number?
                          #(>= % 100000)
@@ -208,12 +200,79 @@
        (filter two-matching-adjacent-digits?)
        (count)))
 
-
-
 (defn day4-2 []
   (->> (range 153517 630395)
        (filter password?)
        (filter two-matching-adjacent-digits?)
        (count)))
 
+
+;;; Day 5
+(defn get-value [mode val input]
+  (cond
+    (= 0 mode) (get input val)
+    (= 1 mode) val))
+
+(defn modes
+  "Returns the modes of the parameters from p1 to p3 (e.g. [p1-mode
+  p2-mode p3-mode])"
+  [opcode]
+  (let [mode-code (quot opcode 100)
+        mode #(int (mod (quot mode-code (Math/pow 10 %)) 10))]
+    [(mode 0) (mode 1) (mode 2)]))
+
+(defn determine-op [{memory :memory pointer :pointer}] 
+  (let [opcode (get memory pointer)]
+    (cond 
+      (= 99 opcode) :halt
+      (> (mod opcode 10) 2) :io
+      :else :calculation)))
+
+(defmulti execute-instruction determine-op)
+
+(defmethod execute-instruction :calculation
+  [{memory :memory pointer :pointer}]
+  (let [opcodes {1 + 2 *}
+        opcode (get memory pointer)
+        op (get opcodes (mod opcode 10))
+        [p1-mode p2-mode p3-mode] (modes opcode)
+        p1 (get memory (inc pointer))
+        p2 (get memory (+ pointer 2))
+        p3 (get memory (+ pointer 3))
+        p1-val (get-value p1-mode p1 memory)
+        p2-val (get-value p2-mode p2 memory)
+        ]
+    {:memory (assoc memory p3 (apply op [p1-val p2-val]))
+     :pointer (+ pointer 4)}))
+
+(defmethod execute-instruction :io
+  [{memory :memory pointer :pointer}]
+  (let [opcode (get memory pointer)
+        op (mod opcode 10)
+        p1 (get memory (inc pointer))
+        [p1-mode &rest] (modes opcode)
+        next-pointer (+ pointer 2)]
+    (cond
+      (= 3 op) {:memory (assoc memory p1 (Integer/parseInt (read-line))) :pointer next-pointer}
+      (= 4 op) (do 
+                 (println (get-value p1-mode p1 memory))
+                 {:memory memory :pointer next-pointer}))))
+
+(defmethod execute-instruction :halt
+  [{memory :memory}]
+  memory)
+
+(defn execute-program [{memory :memory pointer :pointer :as input}]
+  (cond
+    (nil? pointer) (execute-program (assoc input :pointer 0))
+    (= 99 (get memory pointer)) memory
+    :else (execute-program (execute-instruction input))))
+
+(defn day5-1 []
+  (let [input-str (-> (slurp "resources/input5.txt")
+                      (clojure.string/split #"\n")
+                      (first)
+                      (clojure.string/split #","))
+        memory (reduce conj [] (map #(Integer/parseInt %) input-str))]
+    (execute-program {:memory memory})))
 
