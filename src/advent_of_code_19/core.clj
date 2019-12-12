@@ -225,8 +225,10 @@
   (let [opcode (get memory pointer)]
     (cond 
       (= 99 opcode) :halt
-      (> (mod opcode 10) 2) :io
-      :else :calculation)))
+      (some #(= % (mod opcode 10)) [3 4]) :io
+      (some #(= % (mod opcode 10)) [1 2]) :calculation
+      (some #(= % (mod opcode 10)) [5 6]) :jump
+      (some #(= % (mod opcode 10)) [7 8]) :comparison)))
 
 (defmulti execute-instruction determine-op)
 
@@ -258,6 +260,41 @@
                  (println (get-value p1-mode p1 memory))
                  {:memory memory :pointer next-pointer}))))
 
+(defmethod execute-instruction :jump
+  [{memory :memory pointer :pointer :as input}]
+  (let [opcode (get memory pointer)
+        op (mod opcode 10)
+        p1 (get memory (+ pointer 1))
+        p2 (get memory (+ pointer 2))
+        [p1-mode p2-mode &rest] (modes opcode)
+        p1-val (get-value p1-mode p1 memory)
+        p2-val (get-value p2-mode p2 memory)]
+    (cond
+      (= op 5) (if (pos? p1-val) 
+                 (assoc input :pointer p2-val)
+                 (assoc input :pointer (+ 3 pointer)))
+      (= op 6) (if (= 0 p1-val)
+                 (assoc input :pointer p2-val)
+                 (assoc input :pointer (+ 3 pointer))))))
+
+(defmethod execute-instruction :comparison
+  [{memory :memory pointer :pointer :as input}]
+  (let [opcode (get memory pointer)
+        op (mod opcode 10)
+        p1 (get memory (+ pointer 1))
+        p2 (get memory (+ pointer 2))
+        p3 (get memory (+ pointer 3))
+        [p1-mode p2-mode p3-mode] (modes opcode)
+        p1-val (get-value p1-mode p1 memory)
+        p2-val (get-value p2-mode p2 memory)]
+    (cond
+      (= op 7) (if (< p1-val p2-val) 
+                 {:pointer (+ 4 pointer) :memory (assoc memory p3 1)}
+                 {:pointer (+ 4 pointer) :memory (assoc memory p3 0)})
+      (= op 8) (if (= p1-val p2-val)
+                 {:pointer (+ 4 pointer) :memory (assoc memory p3 1)}
+                 {:pointer (+ 4 pointer) :memory (assoc memory p3 0)}))))
+
 (defmethod execute-instruction :halt
   [{memory :memory}]
   memory)
@@ -268,7 +305,7 @@
     (= 99 (get memory pointer)) memory
     :else (execute-program (execute-instruction input))))
 
-(defn day5-1 []
+(defn day5-1 [] ; 5-1: 12428642 5-2: 918655
   (let [input-str (-> (slurp "resources/input5.txt")
                       (clojure.string/split #"\n")
                       (first)

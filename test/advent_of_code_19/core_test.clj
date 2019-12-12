@@ -111,14 +111,27 @@
   (testing "determination of operation :io or :calculation"
     (is (= :io (determine-op {:memory [3 2 3 4 99] :pointer 0})))
     (is (= :io (determine-op {:memory [4 2 3 4 99] :pointer 0})))
+    (is (= :io (determine-op {:memory [104 2 3 4 99] :pointer 0})))
     (is (= :calculation (determine-op {:memory [1 2 3 4 99] :pointer 0})))
     (is (= :calculation (determine-op {:memory [2 2 3 4 99] :pointer 0})))))
 
 (deftest execute-instruction-test
-  (testing ""
+  (testing "calcualtion"
     (is (= {:memory [1002 4 3 4 99] :pointer 4} (execute-instruction {:memory [1002 4 3 4 33] :pointer 0})))
     (is (= {:memory [1 4 3 4 37] :pointer 4} (execute-instruction {:memory [1 4 3 4 33] :pointer 0})))
-    (is (= {:memory [1101 4 3 4 7] :pointer 4} (execute-instruction {:memory [1101 4 3 4 33] :pointer 0})))))
+    (is (= {:memory [1101 4 3 4 7] :pointer 4} (execute-instruction {:memory [1101 4 3 4 33] :pointer 0}))))
+  (testing "jump"
+    (is (= {:memory [1105 1 4711 99] :pointer 4711} (execute-instruction {:memory [1105 1 4711 99] :pointer 0})))
+    (is (= {:memory [5 1 3 99] :pointer 99} (execute-instruction {:memory [5 1 3 99] :pointer 0})))
+    (is (= {:memory [1105 0 4711 99] :pointer 3} (execute-instruction {:memory [1105 0 4711 99] :pointer 0})))
+    (is (= {:memory [1106 0 4711 99] :pointer 4711} (execute-instruction {:memory [1106 0 4711 99] :pointer 0})))
+    (is (= {:memory [1106 1 4711 99] :pointer 3} (execute-instruction {:memory [1106 1 4711 99] :pointer 0}))))
+  (testing "comparison"
+    (is (= {:memory [7 1 2 1] :pointer 4} (execute-instruction {:memory [7 1 2 3] :pointer 0})))
+    (is (= {:memory [7 1 1 0] :pointer 4} (execute-instruction {:memory [7 1 1 3] :pointer 0})))
+    (is (= {:memory [8 1 1 1] :pointer 4} (execute-instruction {:memory [8 1 1 3] :pointer 0})))
+    (is (= {:memory [8 1 2 0] :pointer 4} (execute-instruction {:memory [8 1 2 3] :pointer 0})))
+    (is (= {:memory [1108 1 2 4 0] :pointer 4} (execute-instruction {:memory [1108 1 2 4 0] :pointer 0})))))
 
 (deftest execute-program-test
   (testing "execution of a program"
